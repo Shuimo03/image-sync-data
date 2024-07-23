@@ -26,3 +26,18 @@ func TestHarbor_Ping(t *testing.T) {
 	}
 	fmt.Println(pong)
 }
+
+func TestHarbor_ListRepositories(t *testing.T) {
+	harborOption := &Options{
+		Username: "admin",
+		Password: "Harbor12345",
+	}
+	harborClient := NewHarborClient(harborOption)
+	repositorys, err := harborClient.ListRepositories(1, 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, repository := range repositorys {
+		fmt.Println(repository.Name)
+	}
+}

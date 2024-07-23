@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -14,16 +15,44 @@ const HarborAPI = "https://192.168.126.3:40443/api/v2.0"
 var loginAPI = "https://192.168.126.3:40443/c/login"
 
 type Harbor struct {
-	client  *http.Client
+	Client  *http.Client
 	Options Options
 }
 
-func CreateRepository(repositoryName string) {
+type Repository struct {
+	Name string `json:"name"`
+}
+
+func (h *Harbor) CreateRepository(repositoryName string) {
 
 }
 
-func ListRepositories() ([]string, error) {
-	panic("implement me")
+func (h *Harbor) ListRepositories(page, size int) ([]Repository, error) {
+
+	url := fmt.Sprintf("%s/repositories?page=%d&page_size=%d", HarborAPI, page, size)
+	resp, err := h.Client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, errors.New("failed to fetch repositories: " + resp.Status)
+	}
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(string(body))
+	var repositories []Repository
+	if jsonError := json.Unmarshal(body, &repositories); jsonError != nil {
+		return nil, jsonError
+	}
+
+	return repositories, nil
 }
 
 func (h *Harbor) Login() (string, error) {
@@ -31,7 +60,7 @@ func (h *Harbor) Login() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	resp, err := h.client.Post(loginAPI, "application/x-www-form-urlencoded", bytes.NewBuffer(requestBody))
+	resp, err := h.Client.Post(loginAPI, "application/x-www-form-urlencoded", bytes.NewBuffer(requestBody))
 	if resp.StatusCode != http.StatusOK {
 		return "", errors.New(resp.Status)
 	}
@@ -44,7 +73,7 @@ func (h *Harbor) Login() (string, error) {
 }
 
 func (h *Harbor) Ping() (string, error) {
-	resp, err := h.client.Get(HarborAPI + "/ping")
+	resp, err := h.Client.Get(HarborAPI + "/ping")
 	if err != nil {
 		return "", err
 	}
@@ -68,7 +97,7 @@ func NewHarborClient(opts *Options) *Harbor {
 
 	client := &Harbor{
 		Options: *opts,
-		client:  httpClient,
+		Client:  httpClient,
 	}
 
 	return client

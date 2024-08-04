@@ -16,8 +16,9 @@ import (
 
 func TestHarbor_Ping(t *testing.T) {
 	harborOption := &Options{
-		Username: "admin",
-		Password: "Harbor12345",
+		Username:        "admin",
+		Password:        "Harbor12345",
+		HarborAPIServer: "https://192.168.0.103:40443/api/v2.0",
 	}
 	harborClient := NewHarborClient(harborOption)
 	pong, err := harborClient.Ping()

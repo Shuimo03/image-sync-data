@@ -2,10 +2,8 @@
 http_proxy="http://127.0.0.1:7890"
 https_proxy="http://127.0.0.1:7890"
 
-[source]
-
 
 [target]
-harbor=""
-user=""
-password=""
+server="https://192.168.0.103:40443/api/v2.0"
+user="Admin"
+password="Harbor12345"

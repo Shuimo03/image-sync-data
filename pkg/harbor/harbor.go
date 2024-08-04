@@ -1,35 +1,27 @@
 package harbor
 
 import (
-	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"image-sync-data/pkg/harbor/response"
 	"io"
 	"net/http"
 )
-
-const HarborAPI = "https://192.168.126.3:40443/api/v2.0"
-
-var loginAPI = "https://192.168.126.3:40443/c/login"
 
 type Harbor struct {
 	Client  *http.Client
 	Options Options
 }
 
-type Repository struct {
-	Name string `json:"name"`
-}
-
 func (h *Harbor) CreateRepository(repositoryName string) {
 
 }
 
-func (h *Harbor) ListRepositories(page, size int) ([]Repository, error) {
+func (h *Harbor) ListRepositories(page, size int) ([]response.Repository, error) {
 
-	url := fmt.Sprintf("%s/repositories?page=%d&page_size=%d", HarborAPI, page, size)
+	url := fmt.Sprintf("%s/repositories?page=%d&page_size=%d", h.Options.HarborAPIServer, page, size)
 	resp, err := h.Client.Get(url)
 	if err != nil {
 		return nil, err
@@ -40,14 +32,13 @@ func (h *Harbor) ListRepositories(page, size int) ([]Repository, error) {
 		return nil, errors.New("failed to fetch repositories: " + resp.Status)
 	}
 
-	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
 	fmt.Println(string(body))
-	var repositories []Repository
+	var repositories []response.Repository
 	if jsonError := json.Unmarshal(body, &repositories); jsonError != nil {
 		return nil, jsonError
 	}
@@ -55,25 +46,16 @@ func (h *Harbor) ListRepositories(page, size int) ([]Repository, error) {
 	return repositories, nil
 }
 
-func (h *Harbor) Login() (string, error) {
-	requestBody, err := json.Marshal(h.Options)
-	if err != nil {
-		return "", err
-	}
-	resp, err := h.Client.Post(loginAPI, "application/x-www-form-urlencoded", bytes.NewBuffer(requestBody))
-	if resp.StatusCode != http.StatusOK {
-		return "", errors.New(resp.Status)
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	return string(body), nil
+func (h *Harbor) ListProjects(page, size int, with_detail bool) ([]response.Project, error) {
+	panic("")
+}
+
+func (h *Harbor) login() (string, error) {
+	return "", nil
 }
 
 func (h *Harbor) Ping() (string, error) {
-	resp, err := h.Client.Get(HarborAPI + "/ping")
+	resp, err := h.Client.Get(h.Options.HarborAPIServer + "/ping")
 	if err != nil {
 		return "", err
 	}
@@ -83,9 +65,6 @@ func (h *Harbor) Ping() (string, error) {
 		return "", err
 	}
 	return string(body), nil
-}
-
-func init() {
 }
 
 func NewHarborClient(opts *Options) *Harbor {

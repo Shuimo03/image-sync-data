@@ -10,15 +10,14 @@ type ProxyConfig struct {
 	HTTPSProxy string `toml:"https_proxy"`
 }
 
-type SourceConfig struct {
-}
-
 type TargetConfig struct {
+	Server   string `toml:"server"`
+	User     string `toml:"user"`
+	Password string `toml:"password"`
 }
 
 type Config struct {
 	Proxy  ProxyConfig  `toml:"proxy"`
-	Source SourceConfig `toml:"source"`
 	Target TargetConfig `toml:"target"`
 }
 

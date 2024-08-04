@@ -6,8 +6,8 @@ import (
 )
 
 func InitRouter() *gin.Engine {
-	r := gin.New()
-	r.Group("/v1")
-	r.POST("/list/repository", handlers.ListRepositoriesInfo)
+	r := gin.Default()
+	v1 := r.Group("/v1")
+	v1.POST("/list/repository", handlers.ListRepositoriesInfo)
 	return r
 }
